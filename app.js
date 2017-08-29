@@ -5,8 +5,12 @@ const express = require('express');
 const app = express();
 const _ = require("lodash");
 const ini = require('ini');
+const http = require('http');
 
 const servicesConfig = ini.parse(fs.readFileSync('./services/config.ini', 'utf-8'));
+const networkConfig = JSON.parse(fs.readFileSync('./services/network.json', 'utf-8'));
+
+let ip = "localhost";
 
 function toService(line) {
     const items = _.split(line, "=");
@@ -17,6 +21,17 @@ function toService(line) {
     };
 }
 
+function updateServiceNetwork(service) {
+    if(networkConfig.nat) {
+        var nat = networkConfig.nat[service.name];
+        if(nat) {
+            service.url = "http://" + ip + ":" + nat;
+        }
+    }
+
+    return service;
+}
+
 app.get("/api/services/status", function(req, resp) {
     exec("./services/status.sh", function(error, stdout, stderr) {
         if(error) {
@@ -25,7 +40,10 @@ app.get("/api/services/status", function(req, resp) {
             return;
         }
 
-        const services = _.split(stdout, '\n').map(toService).filter(s => s.name);
+        const services = _.split(stdout, '\n')
+            .map(toService)
+            .filter(s => s.name)
+            .map(updateServiceNetwork);
 
         resp.send(JSON.stringify(services));
     });
@@ -91,4 +109,15 @@ app.get("/api/services/stop/:name", function(req, resp) {
 
 app.use(express.static('build'));
 
-app.listen(40000, () => console.log("App listening to port 40000"));
+const req = http.get({
+    host: "api.ipify.org",
+    path: "/?format=json",
+}, resp => {
+    let body = '';
+    resp.on('data', d => body += d);
+    resp.on('end', () => {
+        ip = JSON.parse(body).ip;
+    });
+});
+
+app.listen(40000, () => console.log("App listening to port 40000 with external ip: " + ip));
