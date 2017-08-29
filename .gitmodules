@@ -1,0 +1,3 @@
+[submodule "services/TiddlyWiki5"]
+	path = services/TiddlyWiki5
+	url = https://github.com/liumiaowilson/TiddlyWiki5.git
