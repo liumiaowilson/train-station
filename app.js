@@ -54,7 +54,7 @@ app.get("/api/services/stop", function(req, resp) {
 app.get("/api/services/status/:name", function(req, resp) {
     const name = req.params.name;
     const port = servicesConfig[name];
-    exec("./services/" + name + "/status.sh " + port, function(error, stdout, stderr) {
+    exec("./services/status_one.sh " + port + " " + name, function(error, stdout, stderr) {
         if(error) {
             console.log(error);
             resp.send("Internal Error");
@@ -68,7 +68,7 @@ app.get("/api/services/status/:name", function(req, resp) {
 app.get("/api/services/start/:name", function(req, resp) {
     const name = req.params.name;
     const port = servicesConfig[name];
-    spawn("./services/" + name + "/start.sh", [port, name], {
+    spawn("./services/start_one.sh", [port, name], {
         stdio: "ignore",
         detached: true,
     }).unref();
@@ -78,7 +78,7 @@ app.get("/api/services/start/:name", function(req, resp) {
 app.get("/api/services/stop/:name", function(req, resp) {
     const name = req.params.name;
     const port = servicesConfig[name];
-    exec("./services/" + name + "/stop.sh " + port + " " + name, function(error, stdout, stderr) {
+    exec("./services/stop_one.sh " + port + " " + name, function(error, stdout, stderr) {
         if(error) {
             console.log(error);
             resp.send("Internal Error");
