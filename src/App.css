@@ -1,0 +1,9 @@
+.page-header {
+    text-align: center;
+}
+
+.btn-toolbar {
+    display: flex;
+    justify-content: center;
+    padding-bottom: 20px;
+}
